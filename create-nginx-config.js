@@ -25,27 +25,23 @@ const generateCertificate = (domain) => {
   execSync(`sudo certbot --nginx --domain ${domain}`);
 };
 
-const main = async () => {
-  const parsedArgs = args(
-    spec,
-    (options = { permissive: false, argv: process.argv.slice(2) })
-  );
+const generateConfig = async (domain, port) => {
   const sampleFile = fs.readFileSync("./config/sample_conf.conf");
   const sampleFileString = sampleFile
     .toString()
-    .replace("example.com", parsedArgs["--domain"])
-    .replace(":1111", ":" + parsedArgs["--port"]);
+    .replace("example.com", domain)
+    .replace(":1111", ":" + port);
   try {
     fs.writeFileSync(
-      `/etc/nginx/sites-available/${parsedArgs["--domain"]}.conf`,
+      `/etc/nginx/sites-available/${domain}.conf`,
       sampleFileString
     );
-    createSymLink(parsedArgs["--domain"]);
+    createSymLink(domain);
     restartNginx();
-    generateCertificate(parsedArgs["--domain"]);
+    generateCertificate(domain);
   } catch (error) {
     console.error("something went wrong while trying to execute commands.");
   }
 };
 
-main();
+module.export = { generateConfig };
